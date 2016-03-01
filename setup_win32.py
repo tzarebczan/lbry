@@ -8,6 +8,7 @@ import sys
 
 from cx_Freeze import setup, Executable
 import requests.certs
+from lbryum import mnemonic
 
 def find_data_file(filename):
     if getattr(sys, 'frozen', False):
@@ -45,6 +46,13 @@ bdist_msi_options = {
     'data': msi_data,
     }
 
+electrum_include_files = [(requests.certs.where(), 'cacert.pem')]
+path_to_electrum_languages = os.path.join(os.path.dirname(mnemonic.__file__), 'wordlist')
+for root, sub_folders, files in os.walk(path_to_electrum_languages):
+    for file_in_root in files:
+        electrum_include_files.append((os.path.join(root, file_in_root),
+                                       os.path.join("wordlist", file_in_root)))
+
 build_exe_options = {
     'include_msvcr': True,
     'includes': [],
@@ -52,24 +60,13 @@ build_exe_options = {
                  'requests', 'bitcoinrpc', 'txjsonrpc', 'win32api', 'Crypto',
                  'gmpy', 'yapsy', 'lbryum', 'google.protobuf'],
     'excludes': ['zope.interface._zope_interface_coptimizations'],
-    'include_files': [os.path.join('lbrynet', 'lbrynet_gui', 'close.gif'),
-                      os.path.join('lbrynet', 'lbrynet_gui', 'close1.png'),
-                      os.path.join('lbrynet', 'lbrynet_gui', 'close2.gif'),
-                      os.path.join('lbrynet', 'lbrynet_gui', 'drop_down.gif'),
-                      os.path.join('lbrynet', 'lbrynet_gui', 'hide_options.gif'),
-                      os.path.join('lbrynet', 'lbrynet_gui', 'lbry-dark-242x80.gif'),
-                      os.path.join('lbrynet', 'lbrynet_gui', 'lbry-dark-icon.ico'),
-                      os.path.join('lbrynet', 'lbrynet_gui', 'lbry-dark-icon.xbm'),
-                      os.path.join('lbrynet', 'lbrynet_gui', 'show_options.gif'),
-                      os.path.join('lbrycrdd.exe'),  # Not included in repo
-                      os.path.join('lbrycrd-cli.exe'),  # Not included in repo
-                      (requests.certs.where(), 'cacert.pem'),
-                      ],
+    'include_files': [os.path.join('lbrynet', 'lbrynet_gui', 'lbry-dark-icon.ico'),
+                      ] + electrum_include_files,
     'namespace_packages': ['zope']}
 
 exe = Executable(
-    script=os.path.join('lbrynet', 'lbrynet_gui', 'gui.py'),
-    base='Win32GUI',
+    script=os.path.join('lbrynet', 'lbrynet_daemon', 'LBRYDaemon.py'),
+    base='Console',
     icon=os.path.join('lbrynet', 'lbrynet_gui', 'lbry-dark-icon.ico'),
     compress=True,
     shortcutName='LBRY',

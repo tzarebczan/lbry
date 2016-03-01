@@ -344,7 +344,7 @@ class LBRYDaemon(xmlrpc.XMLRPC):
         db_revision_file = os.path.join(self.db_dir, "db_revision")
         if os.path.exists(db_revision_file):
             old_revision = int(open(db_revision_file).read().strip())
-        if old_revision < self.current_db_revision:
+        if old_revision < self.current_db_revision and os.name != "nt":
             from lbrynet.db_migrator import dbmigrator
             print "Upgrading your databases..."
             d = threads.deferToThread(dbmigrator.migrate_db, self.db_dir, old_revision, self.current_db_revision)
