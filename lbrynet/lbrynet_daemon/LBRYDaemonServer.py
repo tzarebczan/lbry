@@ -7,7 +7,7 @@ import mimetypes
 
 from datetime import datetime
 from appdirs import user_data_dir
-from twisted.web import server, static, resource
+from twisted.web import server, static, resource, http
 from twisted.internet import defer, interfaces, error, reactor, task, threads
 
 from zope.interface import implements
@@ -28,6 +28,59 @@ log = logging.getLogger(__name__)
 handler = logging.handlers.RotatingFileHandler(lbrynet_log, maxBytes=2097152, backupCount=5)
 log.addHandler(handler)
 log.setLevel(logging.INFO)
+
+
+class LBRYVideoFile(static.File):
+    def __init__(self,  request):
+        static.File.__init__(self, *args, **kwargs)
+        request.removeHeader('range') # We want to ignore range requests
+
+    def render_GET(self, request):
+        self.restat(False)
+
+        if self.type is None:
+            self.type, self.encoding = static.getTypeAndEncoding(self.basename(),
+                                                                 self.contentTypes,
+                                                                 self.contentEncodings,
+                                                                 self.defaultType)
+
+        if not self.exists():
+            return self.childNotFound.render(request)
+
+        if self.isdir():
+            return self.redirect(request)
+
+        request.setHeader(b'accept-ranges', b'none')
+
+        try:
+            fileForReading = self.openForReading()
+        except IOError as e:
+            if e.errno == errno.EACCES:
+                return self.forbidden.render(request)
+            else:
+                raise
+
+        if request.setLastModified(self.getModificationTime()) is http.CACHED:
+            # `setLastModified` also sets the response code for us, so if the
+            # request is cached, we close the file now that we've made sure that
+            # the request would otherwise succeed and return an empty body.
+            fileForReading.close()
+            return b''
+
+        if request.method == b'HEAD':
+            # Set the content headers here, rather than making a producer.
+            self._setContentHeaders(request)
+            # We've opened the file to make sure it's accessible, so close it
+            # now that we don't need it.
+            fileForReading.close()
+            return b''
+
+        producer = self.makeProducer(request, fileForReading)
+        producer.start()
+
+        # and make sure the connection doesn't get closed
+        return server.NOT_DONE_YET
+    render_HEAD = render_GET
 
 
 class LBRYindex(resource.Resource):
@@ -72,7 +125,7 @@ class LBRYFileStreamer(object):
         self._deferred = defer.succeed(None)
 
         self._request.setResponseCode(206)
-        self._request.setHeader('accept-ranges', 'bytes')
+        self._request.setHeader('accept-ranges', 'none')
         self._request.setHeader('content-type', self._content_type)
 
         self.resumeProducing()
@@ -162,8 +215,8 @@ class HostedLBRYFile(resource.Resource):
             if request.args['name'][0] != 'lbry' and request.args['name'][0] not in self._api.waiting_on.keys():
                 d = self._api._download_name(request.args['name'][0])
                 # d.addCallback(lambda stream: self.makeProducer(request, stream))
-                d.addCallback(lambda stream: static.File(os.path.join(self._api.download_directory,
-                                                                          stream.file_name)).render_GET(request))
+                d.addCallback(lambda stream: LBRYVideoFile(os.path.join(self._api.download_directory,
+                                                              stream.file_name)).render_GET(request))
 
             elif request.args['name'][0] in self._api.waiting_on.keys():
                 request.redirect(UI_ADDRESS + "/?watch=" + request.args['name'][0])
