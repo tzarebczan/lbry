@@ -31,9 +31,19 @@ log.setLevel(logging.INFO)
 
 
 class LBRYVideoFile(static.File):
-    def __init__(self,  request):
-        static.File.__init__(self, *args, **kwargs)
-        request.removeHeader('range') # We want to ignore range requests
+    def makeProducer(self, request, fileForReading):
+        """
+        Make a L{StaticProducer} that will produce the body of this response.
+        This method will also set the response code and Content-* headers.
+        @param request: The L{twisted.web.http.Request} object.
+        @param fileForReading: The file object containing the resource.
+        @return: A L{StaticProducer}.  Calling C{.start()} on this will begin
+            producing the response.
+        """
+
+        self._setContentHeaders(request)
+        request.setResponseCode(http.OK)
+        return static.NoRangeStaticProducer(request, fileForReading)
 
     def render_GET(self, request):
         self.restat(False)
