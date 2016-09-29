@@ -896,6 +896,7 @@ class Daemon(jsonrpc.JSONRPC):
         log.info("Closing lbrynet session")
         log.info("Status at time of shutdown: " + self.startup_status[0])
         self.looping_call_manager.shutdown()
+        self.analytics_manager.shutdown()
         if self.lbry_ui_manager.update_checker.running:
             self.lbry_ui_manager.update_checker.stop()
         if self.pending_claim_checker.running:
