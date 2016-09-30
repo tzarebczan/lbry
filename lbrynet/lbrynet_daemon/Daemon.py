@@ -836,8 +836,11 @@ class Daemon(jsonrpc.JSONRPC):
             self.blob_request_payment_rate_manager = PaymentRateManager(
                 self.session.base_payment_rate_manager, rate
             )
-            handlers.append(BlobRequestHandlerFactory(self.session.blob_manager, self.session.wallet,
-                                                      self.blob_request_payment_rate_manager))
+            handlers.append(
+                BlobRequestHandlerFactory(
+                    self.session.blob_manager, self.session.wallet,
+                    self.blob_request_payment_rate_manager, self.analytics_manager.track)
+            )
 
         d1 = self.settings.get_server_data_payment_rate()
         d1.addCallback(get_blob_request_handler_factory)
