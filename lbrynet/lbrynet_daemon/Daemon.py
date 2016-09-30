@@ -174,7 +174,7 @@ class CheckInternetConnection(object):
             self.daemon.connected_to_internet = False
 
 
-class CheckRemoteVersion(object):
+class CheckRemoteVersions(object):
     def __init__(self, daemon):
         self.daemon = daemon
 
