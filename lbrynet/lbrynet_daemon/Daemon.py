@@ -2784,19 +2784,20 @@ class _GetFileHelper(object):
             return False
 
     def _generate_reply(self, size, lbry_file):
-        written_bytes = self._get_written_bytes()
-        code, message = self._get_status()
+        written_bytes = self._get_written_bytes(lbry_file)
+        code, message = self._get_status(lbry_file)
 
         if code == DOWNLOAD_RUNNING_CODE:
             d = lbry_file.status()
             d.addCallback(self._get_file_status)
             d.addCallback(
-                lambda msg: self._get_properties_dict(lbry_file, code, msg, written_bytes))
+                lambda msg: self._get_properties_dict(lbry_file, code, msg, written_bytes, size))
         else:
-            d = defer.succeed(self._get_properties_dict(lbry_file, code, message, written_bytes))
+            d = defer.succeed(
+                self._get_properties_dict(lbry_file, code, message, written_bytes, size))
         return d
     
-    def _get_file_status(file_status):
+    def _get_file_status(self, file_status):
         message = STREAM_STAGES[2][1] % (
             file_status.name, file_status.num_completed, file_status.num_known,
             file_status.running_status)
@@ -2805,7 +2806,7 @@ class _GetFileHelper(object):
     def _get_key(self, lbry_file):
         return binascii.b2a_hex(lbry_file.key) if lbry_file.key else None
 
-    def _full_path(lbry_file):
+    def _full_path(self, lbry_file):
         return os.path.join(lbry_file.download_directory, lbry_file.file_name)
 
     def _get_status(self, lbry_file):
@@ -2830,7 +2831,7 @@ class _GetFileHelper(object):
             written_bytes = False
         return written_bytes
     
-    def _get_properties_dict(self, lbry_file, code, message, written_bytes):
+    def _get_properties_dict(self, lbry_file, code, message, written_bytes, size):
         key = self._get_key(lbry_file)
         full_path = self._full_path(lbry_file)
         mime_type = mimetypes.guess_type(full_path)[0]
