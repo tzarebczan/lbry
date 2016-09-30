@@ -216,9 +216,12 @@ class CheckRemoteVersions(object):
 class AnalyticsManager(object):
     def __init__(self):
         self.analytics_api = None
+        self.events_generator = None
         self.send_heartbeat = LoopingCall(self._send_heartbeat)
 
-    def start(self):
+    def start(self, platform, wallet_type, lbry_id, session_id):
+        context = analytics.make_context(platform, wallet_type)
+        self.events_generator = analytics.Events(context, base58.b58encode(lbry_id), session_id)
         self.analytics_api = analytics.Api.load()
         self.send_heartbeat.start(60)
 
@@ -227,11 +230,11 @@ class AnalyticsManager(object):
             self.send_heartbeat.stop()
 
     def send_download_started(self, name, stream_info=None):
-        event = self._events.download_started(name, stream_info)
+        event = self.events_generator.download_started(name, stream_info)
         self.analytics_api.track(event)
 
     def _send_heartbeat(self):
-        heartbeat = self._events.heartbeat()
+        heartbeat = self.events_generator.heartbeat()
         self.analytics_api.track(heartbeat)
 
 
@@ -652,7 +655,9 @@ class Daemon(jsonrpc.JSONRPC):
         d.addCallback(lambda _: self._setup_server())
         d.addCallback(lambda _: _log_starting_vals())
         d.addCallback(lambda _: _announce_startup())
-        d.addCallback(lambda _: self.analytics_manager.start())
+        d.addCallback(
+            lambda _: self.analytics_manager.start(
+                self._get_platform(), self.wallet_type, self.lbryid, self._session_id))
         # TODO: handle errors here
         d.callback(None)
 
@@ -686,10 +691,6 @@ class Daemon(jsonrpc.JSONRPC):
 
         d = _log_platform()
         return d
-
-    def _set_events(self):
-        context = analytics.make_context(self._get_platform(), self.wallet_type)
-        self._events = analytics.Events(context, base58.b58encode(self.lbryid), self._session_id)
 
     def _check_lbrynet_connection(self):
         def _log_success():
