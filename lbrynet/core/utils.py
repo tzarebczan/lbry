@@ -1,4 +1,5 @@
 import base64
+import datetime
 import distutils.version
 import random
 import os
@@ -9,6 +10,17 @@ from lbrynet.core.cryptoutils import get_lbry_hash_obj
 
 blobhash_length = get_lbry_hash_obj().digest_size * 2  # digest_size is in bytes, and blob hashes are hex encoded
 
+
+# defining this here allows for easier overriding in testing
+def now():
+    return datetime.datetime.now()
+
+def utcnow():
+    return datetime.datetime.utcnow()
+
+def isonow():
+    """Return utc now in isoformat with timezone"""
+    return utcnow().isoformat() + 'Z'
 
 def generate_id(num=None):
     h = get_lbry_hash_obj()
