@@ -1,7 +1,6 @@
 from collections import defaultdict
 import logging
 import os
-import unqlite
 import time
 from Crypto.Hash import SHA512
 from Crypto.PublicKey import RSA
@@ -215,7 +214,7 @@ class PTCWallet(object):
 
     def _open_db(self):
         def open_db():
-            self.db = unqlite.UnQLite(os.path.join(self.db_dir, "ptcwallet.db"))
+            self.db = {}
         return threads.deferToThread(open_db)
 
     def _save_private_key(self, private_key):

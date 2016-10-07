@@ -82,8 +82,6 @@ C:\Python27\Scripts\pip.exe install slowaes==0.1a1
 
 C:\Python27\Scripts\pip.exe install txJSON-RPC==0.3.1
 
-C:\Python27\Scripts\pip.exe install unqlite==0.5.3
-
 C:\Python27\Scripts\pip.exe install wsgiref==0.1.2
 
 C:\Python27\Scripts\pip.exe install base58==0.2.2
