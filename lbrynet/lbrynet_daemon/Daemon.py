@@ -654,7 +654,7 @@ class Daemon(AuthJSONRPCServer):
         d.addErrback(log_support.failure, log, 'Failure while shutting down: %s')
         d.addCallback(lambda _: self._stop_reflector())
         d.addErrback(log_support.failure, log, 'Failure while shutting down: %s')
-        d.addCallback(lambda _: self.lbry_file_manager.stop())
+        d.addCallback(lambda _: self._stop_lbry_file_manager())
         d.addErrback(log_support.failure, log, 'Failure while shutting down: %s')
         if self.session is not None:
             d.addCallback(lambda _: self.session.shut_down())
@@ -778,6 +778,10 @@ class Daemon(AuthJSONRPCServer):
             return self.lbry_file_manager.setup()
         d.addCallback(lambda _: set_lbry_file_manager())
         return d
+
+    def _stop_lbry_file_manager(self):
+        if self.lbry_file_manager:
+            self.lbry_file_manager.stop()
 
     def _get_analytics(self):
         analytics_api = analytics.Api.load()
