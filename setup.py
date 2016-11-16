@@ -47,7 +47,8 @@ requires = [
     'base58',
     'googlefinance',
     'requests_futures',
-    'PyYAML'
+    'PyYAML',
+    'envparse'
 ]
 
 console_scripts = [
