@@ -252,6 +252,7 @@ elif platform == WINDOWS:
                      'cx_Freeze',
                      'dns',
                      'ecdsa',
+                     'envparse',
                      'gmpy',
                      'googlefinance',
                      'jsonrpc',
