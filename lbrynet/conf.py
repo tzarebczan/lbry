@@ -177,7 +177,9 @@ class AdjustableSettings(Settings):
         Settings.__init__(self)
 
     def __getattr__(self, attr):
-        return self.environ(attr)
+        if attr in self.environ.original_schema:
+            return self.environ(attr)
+        raise AttributeError
 
     def get_dict(self):
         return {
