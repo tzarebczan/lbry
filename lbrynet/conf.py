@@ -166,7 +166,9 @@ ENVIRONMENT = Env(
     # TODO: document what the 'address' field is used for
     # TODO: writing json on the cmd line is a pain, come up with a nicer
     # parser for this data structure. (maybe MAX_KEY_FEE=USD:25
-    max_key_fee=(json.loads, {'USD': {'amount': 25.0, 'address': ''}})
+    max_key_fee=(json.loads, {'USD': {'amount': 25.0, 'address': ''}}),
+    bittrex_feed=(str, "https://bittrex.com/api/v1.1/public/getmarkethistory"),
+    API_INTERFACE = (str, "localhost"),
 )
 
 
@@ -201,7 +203,6 @@ class ApplicationSettings(Settings):
         self.LOG_FILE_NAME = "lbrynet.log"
         self.LOG_POST_URL = "https://lbry.io/log-upload"
         self.CRYPTSD_FILE_EXTENSION = ".cryptsd"
-        self.API_INTERFACE = "localhost"
         self.API_ADDRESS = "lbryapi"
         self.ICON_PATH = "icons" if platform is WINDOWS else "app.icns"
         self.APP_NAME = "LBRY"
@@ -244,11 +245,11 @@ class Config(DefaultSettings):
 
     @property
     def ORIGIN(self):
-        return "http://%s:%i" % (DEFAULT_SETTINGS.API_INTERFACE, self.api_port)
+        return "http://%s:%i" % (self.API_INTERFACE, self.api_port)
 
     @property
     def REFERER(self):
-        return "http://%s:%i/" % (DEFAULT_SETTINGS.API_INTERFACE, self.api_port)
+        return "http://%s:%i/" % (self.API_INTERFACE, self.api_port)
 
     @property
     def API_CONNECTION_STRING(self):
