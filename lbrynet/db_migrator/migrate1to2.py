@@ -12,7 +12,7 @@ def do_migration(db_dir):
 
 
 def migrate_blockchainname_db(db_dir):
-    blockchainname_db = os.path.join(db_dir,"blockchainname.db")
+    blockchainname_db = os.path.join(db_dir, "blockchainname.db")
     # skip migration on fresh installs 
     if not os.path.isfile(blockchainname_db):
         return 

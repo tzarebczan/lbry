@@ -8,7 +8,7 @@ def migrate_db(db_dir, start, end):
             from lbrynet.db_migrator.migrate1to2 import do_migration
             do_migration(db_dir)
         else:
-            raise Exception("DB migration of version {} to {} is not available".format(current,current+1))
+            raise Exception("DB migration of version {} to {} is not available".format(current, current+1))
         current += 1
 
     return None
