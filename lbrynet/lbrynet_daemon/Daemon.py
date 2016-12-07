@@ -9,6 +9,8 @@ import sys
 import base58
 import requests
 import simplejson as json
+from lbryschema import migrate as pb_migrate
+
 from urllib2 import urlopen
 from datetime import datetime
 from decimal import Decimal
@@ -38,7 +40,7 @@ from lbrynet.lbrynet_daemon.Downloader import GetStream
 from lbrynet.lbrynet_daemon.Publisher import Publisher
 from lbrynet.lbrynet_daemon.ExchangeRateManager import ExchangeRateManager
 from lbrynet.lbrynet_daemon.auth.server import AuthJSONRPCServer
-from lbrynet.core import log_support, utils, Platform
+from lbrynet.core import log_support, utils, SystemInformation
 from lbrynet.core.StreamDescriptor import StreamDescriptorIdentifier, download_sd_blob, BlobStreamDescriptorReader
 from lbrynet.core.Session import Session
 from lbrynet.core.PTCWallet import PTCWallet
@@ -351,7 +353,7 @@ class Daemon(AuthJSONRPCServer):
 
     def _get_platform(self):
         if self.platform is None:
-            self.platform = Platform.get_platform()
+            self.platform = SystemInformation.get_platform()
             self.platform["ui_version"] = self.lbry_ui_manager.loaded_git_version
         return self.platform
 
@@ -2302,7 +2304,23 @@ class Daemon(AuthJSONRPCServer):
         d.addCallback(self.session.blob_tracker.get_availability_for_blobs)
         d.addCallback(_get_mean)
         d.addCallback(lambda result: self._render_response(result, OK_CODE))
+        return d
 
+    def jsonrpc_protobuf_resolve(self, p):
+        """
+        Resolve a claim using protobuf schema
+
+        Params:
+            name (str): name to be resolved
+        Returns:
+            serialized protobuf
+        """
+
+        name = p['name']
+
+        d = self._resolve_name(name, force_refresh=True)
+        d.addCallback(pb_migrate.migrate)
+        d.addCallback(lambda r: self._render_response(r, OK_CODE))
         return d
 
     @AuthJSONRPCServer.auth_required

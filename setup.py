@@ -47,7 +47,8 @@ requires = [
     'googlefinance',
     'requests_futures',
     'PyYAML',
-    'envparse'
+    'envparse',
+    'lbryschema'
 ]
 
 console_scripts = [

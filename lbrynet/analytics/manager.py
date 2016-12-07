@@ -3,7 +3,7 @@ from lbrynet.core import looping_call_manager
 from twisted.internet import defer
 from twisted.internet import task
 
-from lbrynet.core.Platform import get_platform
+from lbrynet.core.SystemInformation import get_platform
 from lbrynet.conf import settings
 
 import constants
