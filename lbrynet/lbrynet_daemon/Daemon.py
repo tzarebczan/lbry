@@ -835,10 +835,16 @@ class Daemon(AuthJSONRPCServer):
             EncryptedFileStreamType, file_opener_factory)
         return defer.succeed(None)
 
-    def _download_sd_blob(self, sd_hash, timeout=conf.settings.sd_download_timeout):
+    def _download_sd_blob(self, sd_hash, timeout=None):
+        timeout = timeout or conf.settings.sd_download_timeout
+
         def cb(result):
+            try:
+                reply = json.loads(result)
+            except ValueError:
+                reply = "Binary data, %i bytes" % len(result)
             if not r.called:
-                r.callback(result)
+                r.callback(reply)
 
         def eb():
             if not r.called:
@@ -848,11 +854,11 @@ class Daemon(AuthJSONRPCServer):
         r = defer.Deferred(None)
         reactor.callLater(timeout, eb)
         d = download_sd_blob(self.session, sd_hash, self.session.payment_rate_manager)
-        d.addErrback(lambda err: self.analytics_manager.send_error(
-            "error downloading sd blob: " + err, sd_hash))
         d.addCallback(BlobStreamDescriptorReader)
-        d.addCallback(lambda blob: blob.get_info())
+        d.addCallback(lambda blob: blob._get_raw_data())
         d.addCallback(cb)
+        d.addErrback(log.exception)
+        # d.addErrback(lambda err: self.analytics_manager.send_error("error downloading sd blob: " + err, sd_hash))
 
         return r
 
@@ -2071,9 +2077,7 @@ class Daemon(AuthJSONRPCServer):
         sd_hash = p[FileID.SD_HASH]
         timeout = p.get('timeout', conf.settings.sd_download_timeout)
         d = self._download_sd_blob(sd_hash, timeout)
-        d.addCallbacks(
-            lambda r: self._render_response(r, OK_CODE),
-            lambda _: self._render_response(False, OK_CODE))
+        d.addCallback(lambda r: self._render_response(r, OK_CODE))
         return d
 
     def jsonrpc_get_nametrie(self):
