@@ -325,28 +325,34 @@ class AvailabilityRequest(RequestHelper):
         return request
 
     def _handle_request(self, a_r):
-        log.debug('making an availability request')
+        log.info('making an availability request --> %s, %s', self.peer.host, str(a_r.request_dict))
         d1 = self.protocol.add_request(a_r)
         d1.addCallback(self._handle_availability, a_r)
         d1.addErrback(self._request_failed, "availability request")
 
     def _handle_availability(self, response_dict, request):
+        log.info("got availability response from %s: %s", self.peer.host, str(response_dict))
         assert request.response_identifier == 'available_blobs'
         if 'available_blobs' not in response_dict:
             raise InvalidResponseError("response identifier not in response")
         log.debug("Received a response to the availability request")
         # save available blobs
         blob_hashes = response_dict['available_blobs']
+        make_next_request = False
         for blob_hash in blob_hashes:
             if blob_hash in request.request_dict['requested_blobs']:
+                make_next_request = True
                 self.process_available_blob_hash(blob_hash, request)
         # everything left in the request is missing
         for blob_hash in request.request_dict['requested_blobs']:
             self.unavailable_blobs.append(blob_hash)
-        return True
+
+        if not make_next_request:
+            self.protocol.cancel_requests()
+        return make_next_request
 
     def process_available_blob_hash(self, blob_hash, request):
-        log.debug("The server has indicated it has the following blob available: %s", blob_hash)
+        log.info("%s has indicated it has the following blob available: %s", self.peer.host, blob_hash)
         self.available_blobs.append(blob_hash)
         self.remove_from_unavailable_blobs(blob_hash)
         request.request_dict['requested_blobs'].remove(blob_hash)
@@ -372,7 +378,7 @@ class PriceRequest(RequestHelper):
         if rate is None:
             log.debug("No blobs to request from %s", self.peer)
             raise Exception('Cannot make a price request without a payment rate')
-        log.debug("Offer rate %s to %s for %i blobs", rate, self.peer, len(self.available_blobs))
+        log.info("Offer rate %s to %s for %i blobs", rate, self.peer, len(self.available_blobs))
 
         request_dict = {'blob_data_payment_rate': rate}
         return ClientRequest(request_dict, 'blob_data_payment_rate')
@@ -395,7 +401,7 @@ class PriceRequest(RequestHelper):
             self.protocol_prices[self.protocol] = offer.rate
             return True
         elif offer.is_too_low:
-            log.debug("Offered rate %f/mb rejected by %s", offer.rate, self.peer.host)
+            log.info("Offered rate %f/mb rejected by %s", offer.rate, self.peer.host)
             return not self.payment_rate_manager.price_limit_reached(self.peer)
         else:
             log.warning("Price disagreement")
@@ -438,7 +444,7 @@ class DownloadRequest(RequestHelper):
             b for b in self.requestor._blobs_to_download()
             if self.requestor._hash_available_on(b.blob_hash, self.peer)
         ]
-        log.debug('available blobs: %s', available_blobs)
+        log.info('available blobs: %s', available_blobs)
         return available_blobs
 
     def find_blob(self, to_download):
@@ -450,7 +456,7 @@ class DownloadRequest(RequestHelper):
             d, write_func, cancel_func = blob.open_for_writing(self.peer)
             if d is not None:
                 return BlobDownloadDetails(blob, d, write_func, cancel_func, self.peer)
-            log.debug('Skipping blob %s as there was an issue opening it for writing', blob)
+            log.warning('Skipping blob %s as there was an issue opening it for writing', blob)
         return None
 
     def _make_request(self, blob_details):

@@ -55,7 +55,6 @@ class BlobAvailabilityTracker(object):
     def last_mean_availability(self):
         return max(Decimal(0.01), self._last_mean_availability)
 
-
     def _update_peers_for_blob(self, blob):
         def _save_peer_info(blob_hash, peers):
             v = {blob_hash: peers}
