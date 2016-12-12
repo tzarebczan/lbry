@@ -26,4 +26,5 @@ setup(
     app=APP,
     options={'py2app': OPTIONS},
     data_files=DATA_FILES,
+    setup_requires=['py2app']
 )
