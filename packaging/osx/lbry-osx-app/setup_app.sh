@@ -15,7 +15,9 @@ if [ -z ${TRAVIS_BUILD_DIR+x} ]; then
     mkdir -p $tmp
     cd $tmp
     git clone --depth 1 http://github.com/lbryio/lbry.git
+    git checkout fix-py2app
     cd lbry
+    pip install .
     LBRY="${tmp}/lbry"
 else
     # building on travis
