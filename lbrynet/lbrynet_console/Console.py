@@ -17,7 +17,7 @@ from lbrynet.lbrynet_daemon.auth.client import LBRYAPIClient
 from lbrynet import analytics
 from lbrynet.core.Session import Session
 from lbrynet.lbrynet_console.ConsoleControl import ConsoleControl
-from lbrynet.lbrynet_console.Settings import Settings
+from lbrynet.lbrynet_daemon.Settings import Settings
 from lbrynet.lbryfilemanager.EncryptedFileManager import EncryptedFileManager
 from lbrynet.conf import settings
 from lbrynet.core.utils import generate_id
