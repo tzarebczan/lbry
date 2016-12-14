@@ -7,7 +7,6 @@ log = logging.getLogger(__name__)
 
 
 class ConsoleControl(basic.LineReceiver):
-    from os import linesep as delimiter
 
     def __init__(self):
         self.connected = False

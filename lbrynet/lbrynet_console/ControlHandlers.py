@@ -1,11 +1,9 @@
 import logging
 
-from zope.interface import implements
 from lbrynet.core.PaymentRateManager import PaymentRateManager
 from lbrynet.lbryfilemanager.EncryptedFileCreator import create_lbry_file
 from lbrynet.lbryfilemanager.EncryptedFileDownloader import ManagedEncryptedFileDownloader
 from lbrynet.lbryfile.StreamDescriptor import publish_sd_blob, create_plain_sd
-from lbrynet.lbrynet_console.interfaces import ICommandHandler, ICommandHandlerFactory
 from lbrynet.core.StreamDescriptor import download_sd_blob
 from lbrynet.core.Error import UnknownNameError, InvalidBlobHashError, InsufficientFundsError
 from lbrynet.core.Error import InvalidStreamInfoError
@@ -100,7 +98,6 @@ def get_time_behind_blockchain(best_block_time):
 
 
 class CommandHandlerFactory(object):
-    implements(ICommandHandlerFactory)
     priority = 0
     short_help = "This should be overridden"
     full_help = "This should really be overridden"
@@ -118,7 +115,6 @@ class CommandHandlerFactory(object):
 
 
 class CommandHandler(object):
-    implements(ICommandHandler)
 
     prompt_description = None
 
