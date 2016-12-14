@@ -29,21 +29,6 @@ from lbrynet.lbryfile.client.EncryptedFileOptions import add_lbry_file_to_sd_ide
 from lbrynet.lbryfile.client.EncryptedFileDownloader import EncryptedFileOpenerFactory
 from lbrynet.lbryfile.StreamDescriptor import EncryptedFileStreamType
 from lbrynet.lbryfile.EncryptedFileMetadataManager import DBEncryptedFileMetadataManager, TempEncryptedFileMetadataManager
-from lbrynet.lbrynet_console.ControlHandlers import ApplicationStatusFactory, GetWalletBalancesFactory, ShutDownFactory
-from lbrynet.lbrynet_console.ControlHandlers import ImmediateAnnounceAllBlobsFactory
-from lbrynet.lbrynet_console.ControlHandlers import EncryptedFileStatusFactory, DeleteEncryptedFileChooserFactory
-from lbrynet.lbrynet_console.ControlHandlers import ToggleEncryptedFileRunningChooserFactory
-from lbrynet.lbrynet_console.ControlHandlers import ModifyApplicationDefaultsFactory
-from lbrynet.lbrynet_console.ControlHandlers import CreateEncryptedFileFactory, PublishStreamDescriptorChooserFactory
-from lbrynet.lbrynet_console.ControlHandlers import ShowPublishedSDHashesChooserFactory
-from lbrynet.lbrynet_console.ControlHandlers import CreatePlainStreamDescriptorChooserFactory
-from lbrynet.lbrynet_console.ControlHandlers import ShowEncryptedFileStreamHashChooserFactory, AddStreamFromHashFactory
-from lbrynet.lbrynet_console.ControlHandlers import AddStreamFromSDFactory, AddStreamFromLBRYcrdNameFactory
-from lbrynet.lbrynet_console.ControlHandlers import ClaimNameFactory, GetNewWalletAddressFactory
-from lbrynet.lbrynet_console.ControlHandlers import ShowServerStatusFactory, ModifyServerSettingsFactory
-from lbrynet.lbrynet_console.ControlHandlers import ModifyEncryptedFileOptionsChooserFactory, StatusFactory
-from lbrynet.lbrynet_console.ControlHandlers import PeerStatsAndSettingsChooserFactory, PublishFactory
-from lbrynet.lbrynet_console.ControlHandlers import BlockchainStatusFactory
 from lbrynet.core.Wallet import LBRYumWallet
 
 
@@ -312,51 +297,6 @@ class Console():
                                                    self.session.wallet)
         self.sd_identifier.add_stream_downloader_factory(EncryptedFileStreamType, downloader_factory)
         return defer.succeed(True)
-
-    def _setup_control_handlers(self):
-        handlers = [
-            ApplicationStatusFactory(self.session.rate_limiter, self.session.dht_node),
-            GetWalletBalancesFactory(self.session.wallet),
-            ModifyApplicationDefaultsFactory(self),
-            ShutDownFactory(self),
-            PeerStatsAndSettingsChooserFactory(self.session.peer_manager),
-            EncryptedFileStatusFactory(self.lbry_file_manager),
-            AddStreamFromSDFactory(self.sd_identifier, self.session.base_payment_rate_manager,
-                                   self.session.wallet),
-            DeleteEncryptedFileChooserFactory(self.lbry_file_metadata_manager, self.session.blob_manager,
-                                         self.lbry_file_manager),
-            ToggleEncryptedFileRunningChooserFactory(self.lbry_file_manager),
-            CreateEncryptedFileFactory(self.session, self.lbry_file_manager),
-            PublishStreamDescriptorChooserFactory(self.lbry_file_metadata_manager,
-                                                  self.session.blob_manager),
-            ShowPublishedSDHashesChooserFactory(self.lbry_file_metadata_manager,
-                                                self.lbry_file_manager),
-            CreatePlainStreamDescriptorChooserFactory(self.lbry_file_manager),
-            ShowEncryptedFileStreamHashChooserFactory(self.lbry_file_manager),
-            ModifyEncryptedFileOptionsChooserFactory(self.lbry_file_manager),
-            AddStreamFromHashFactory(self.sd_identifier, self.session, self.session.wallet),
-            StatusFactory(self, self.session.rate_limiter, self.lbry_file_manager,
-                          self.session.blob_manager, self.session.wallet if not self.fake_wallet else None),
-            ImmediateAnnounceAllBlobsFactory(self.session.blob_manager)
-        ]
-        self.add_control_handlers(handlers)
-        if not self.fake_wallet:
-            lbrycrd_handlers = [
-                AddStreamFromLBRYcrdNameFactory(self.sd_identifier, self.session,
-                                                self.session.wallet),
-                ClaimNameFactory(self.session.wallet, self.lbry_file_manager,
-                                 self.session.blob_manager),
-                GetNewWalletAddressFactory(self.session.wallet),
-                PublishFactory(self.session, self.lbry_file_manager, self.session.wallet),
-                BlockchainStatusFactory(self.session.wallet)
-            ]
-            self.add_control_handlers(lbrycrd_handlers)
-        if self.peer_port is not None:
-            server_handlers = [
-                ShowServerStatusFactory(self),
-                ModifyServerSettingsFactory(self),
-            ]
-            self.add_control_handlers(server_handlers)
 
     def _setup_query_handlers(self):
         handlers = [
