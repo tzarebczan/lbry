@@ -98,7 +98,6 @@ elif platform == DARWIN:
           maintainer=maintainer,
           maintainer_email=maintainer_email,
           url=url,
-          zip_safe=False,
           author=author,
           keywords=keywords,
           packages=find_packages(base_dir),
