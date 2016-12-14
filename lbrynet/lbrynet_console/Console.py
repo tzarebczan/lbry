@@ -16,7 +16,6 @@ from lbrynet.lbrynet_daemon.auth.client import LBRYAPIClient
 
 from lbrynet import analytics
 from lbrynet.core.Session import Session
-from lbrynet.lbrynet_console.ConsoleControl import ConsoleControl
 from lbrynet.lbrynet_daemon.Settings import Settings
 from lbrynet.lbryfilemanager.EncryptedFileManager import EncryptedFileManager
 from lbrynet.conf import settings
@@ -434,7 +433,7 @@ class Console():
             return defer.succeed(True)
 
     def _setup_controller(self):
-        self.controller = ConsoleControl()
+        self.controller = None
         stdio.StandardIO(self.controller)
         logger = logging.getLogger()
         formatter = logging.Formatter("%(message)s")
