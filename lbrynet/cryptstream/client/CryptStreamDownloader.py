@@ -38,7 +38,7 @@ class CryptStreamDownloader(object):
     implements(IStreamDownloader)
 
     def __init__(self, peer_finder, rate_limiter, blob_manager,
-                 payment_rate_manager, wallet, upload_allowed):
+                 payment_rate_manager, wallet):
         """Initialize a CryptStreamDownloader
 
         @param peer_finder: An object which implements the IPeerFinder
@@ -61,7 +61,6 @@ class CryptStreamDownloader(object):
         self.blob_manager = blob_manager
         self.payment_rate_manager = payment_rate_manager
         self.wallet = wallet
-        self.upload_allowed = upload_allowed
 
         self.key = None
         self.stream_name = None
@@ -155,7 +154,7 @@ class CryptStreamDownloader(object):
         return d
 
     def _get_download_manager(self):
-        download_manager = DownloadManager(self.blob_manager, self.upload_allowed)
+        download_manager = DownloadManager(self.blob_manager)
         download_manager.blob_info_finder = self._get_metadata_handler(download_manager)
         download_manager.blob_requester = self._get_blob_requester(download_manager)
         download_manager.progress_manager = self._get_progress_manager(download_manager)
