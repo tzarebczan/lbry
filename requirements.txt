@@ -1,3 +1,4 @@
+pyasn1
 Twisted==16.0.0
 appdirs==1.4.0
 argparse==1.2.1
