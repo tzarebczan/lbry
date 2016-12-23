@@ -42,8 +42,6 @@ C:\Python27\Scripts\pip.exe install https://bitbucket.org/jobevers/cx_freeze/get
 
 C:\Python27\Scripts\pip.exe install Twisted==16.0.0
 
-C:\Python27\Scripts\pip.exe install Yapsy==1.11.223
-
 C:\Python27\Scripts\pip.exe install appdirs==1.4.0
 
 C:\Python27\Scripts\pip.exe install argparse==1.2.1
