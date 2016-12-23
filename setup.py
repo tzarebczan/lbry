@@ -42,8 +42,11 @@ def get_requirements_and_links():
         if getattr(item, 'markers', None):
             if item.markers is not None:
                 # remove OS specific requirements
-                if not item.markers.evaluate():
-                    reqs.remove(str(item.req))
+                if getattr(item.markers, 'evaluate', None):
+                    if not item.markers.evaluate():
+                        reqs.remove(str(item.req))
+                else:
+                    print "Don't know how to process markers: %s" % str(item.markers)
 
     return reqs, links
 
