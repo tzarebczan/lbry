@@ -8,21 +8,7 @@ mingw32-make --version
 
 mkdir C:\temp
 
-Invoke-WebRequest "https://pypi.python.org/packages/55/90/e987e28ed29b571f315afea7d317b6bf4a551e37386b344190cffec60e72/miniupnpc-1.9.tar.gz" -OutFile "C:\temp\miniupnpc-1.9.tar.gz"
-
 cd C:\temp
-
-7z e miniupnpc-1.9.tar.gz
-
-7z x miniupnpc-1.9.tar
-
-cd C:\temp\miniupnpc-1.9
-
-mingw32-make.exe -f Makefile.mingw
-
-C:\Python27\python.exe C:\temp\miniupnpc-1.9\setupmingw32.py build --compiler=mingw32
-
-C:\Python27\python.exe C:\temp\miniupnpc-1.9\setupmingw32.py install
 
 Invoke-WebRequest "https://github.com/lbryio/lbry/raw/master/packaging/windows/libs/gmpy-1.17-cp27-none-win32.whl" -OutFile "C:\temp\gmpy-1.17-cp27-none-win32.whl"
 
