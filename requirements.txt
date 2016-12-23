@@ -1,4 +1,4 @@
-pyasn1
+pyasn1; sys_platform=='darwin'
 Twisted==16.0.0
 appdirs==1.4.0
 argparse==1.2.1
@@ -31,5 +31,3 @@ googlefinance==0.7
 pyyaml==3.12
 service_identity==16.0.0
 cx_Freeze; sys_platform=='win32'
-win32api; sys_platform=='win32'
-pkg_resources; sys_platform=='win32'
