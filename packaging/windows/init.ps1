@@ -40,8 +40,6 @@ C:\Python27\Scripts\pip.exe install zope.interface==4.1.3
 # and it is branched off of 4.3.3
 C:\Python27\Scripts\pip.exe install https://bitbucket.org/jobevers/cx_freeze/get/handle-version.tar.gz
 
-C:\Python27\Scripts\pip.exe install cython==0.24.1
-
 C:\Python27\Scripts\pip.exe install Twisted==16.0.0
 
 C:\Python27\Scripts\pip.exe install Yapsy==1.11.223
@@ -84,8 +82,6 @@ C:\Python27\Scripts\pip.exe install simplejson==3.8.2
 C:\Python27\Scripts\pip.exe install slowaes==0.1a1
 
 C:\Python27\Scripts\pip.exe install txJSON-RPC==0.3.1
-
-C:\Python27\Scripts\pip.exe install unqlite==0.5.3
 
 C:\Python27\Scripts\pip.exe install wsgiref==0.1.2
 
