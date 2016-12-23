@@ -92,3 +92,5 @@ C:\Python27\Scripts\pip.exe install jsonschema==2.5.1
 C:\Python27\Scripts\pip.exe install git+https://github.com/lbryio/lbryum.git
 
 cd C:\projects\lbry
+
+C:\Python27\Scripts\pip.exe install -r requirements.txt
