@@ -1,4 +1,4 @@
-C:\Python27\python.exe setup.py install
+C:\Python27\Scripts\pip.exe install .
 
 # If this is a build because of a tag, make sure that
 # its either a testing tag or a tag that matches the version

@@ -2,7 +2,8 @@ from setuptools import setup
 import os
 from lbrynet import conf
 
-APP = [os.path.join('lbry_uri_handler', 'LBRYURIHandler.py')]
+APP_DIR = os.path.join(os.path.dirname(__file__), "unix")
+APP_PATH = os.path.join(APP_DIR, 'LBRYURIHandler.py')
 DATA_FILES = []
 OPTIONS = {'argv_emulation': True,
            'packages': ['jsonrpc'],
@@ -15,11 +16,11 @@ OPTIONS = {'argv_emulation': True,
                     'CFBundleURLSchemes': [conf.PROTOCOL_PREFIX]
                     }
                ]
-           }
-        }
+           },
+}
 
 setup(
-    app=APP,
+    app=[APP_PATH],
     data_files=DATA_FILES,
     options={'py2app': OPTIONS},
     setup_requires=['py2app'],

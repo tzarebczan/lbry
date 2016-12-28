@@ -7,7 +7,7 @@ import requests.certs
 import site
 import pkg_resources
 
-app_dir = os.path.join('packaging', 'windows', 'lbry-win32-app')
+app_dir = os.path.join(os.path.dirname(__file__), 'win32')
 daemon_dir = os.path.join('lbrynet', 'lbrynet_daemon')
 win_icon = os.path.join(app_dir, 'icons', 'lbry256.ico')
 wordlist_path = pkg_resources.resource_filename('lbryum', 'wordlist')

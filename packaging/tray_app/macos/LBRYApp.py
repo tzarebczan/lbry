@@ -69,3 +69,4 @@ class LBRYDaemonApp(AppKit.NSApplication):
 def notify(msg):
     if platform.mac_ver()[0] >= "10.10":
         LBRYNotify(msg)
+

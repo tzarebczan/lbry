@@ -2,6 +2,9 @@
 
 import sys
 import os
+import ez_setup
+ez_setup.use_setuptools()
+from setuptools import setup, find_packages
 from pip import req as pip_req, download as pip_download
 from lbrynet import __version__
 
@@ -71,10 +74,23 @@ package_data = {package_name: list(package_files('lbrynet/resources/ui'))}
 entry_points = {'console_scripts': console_scripts}
 requires, dependency_links = get_requirements_and_links()
 
-if platform in [LINUX, DARWIN]:
-    from setup_unix import setup
-else:
-    from setup_win32 import setup
+if platform == DARWIN:
+    os.environ['CFLAGS'] = '-I/usr/local/opt/openssl/include'
 
-setup(requires, package_name, platform, description, __version__, maintainer, maintainer_email, url, author,
-      keywords, base_dir, entry_points, package_data, dependency_links, [])
+setup(name=package_name,
+      description=description,
+      version=__version__,
+      maintainer=maintainer,
+      maintainer_email=maintainer_email,
+      url=url,
+      author=author,
+      keywords=keywords,
+      packages=find_packages(base_dir),
+      install_requires=requires,
+      entry_points=entry_points,
+      package_data=package_data,
+      dependency_links=dependency_links,
+      # If this is True, setuptools tries to build an egg
+      # and py2app / modulegraph / imp.find_module
+      # doesn't like that.
+      zip_safe=False)

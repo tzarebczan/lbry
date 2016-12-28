@@ -23,7 +23,7 @@ set_build() {
 IS_RC_REGEX="v[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+rc[[:digit:]]+"
 
 if [[ -z "$TRAVIS_TAG" ]]; then
-    python packaging/append_sha_to_version.py lbrynet/__init__.py "${TRAVIS_COMMIT}"
+    python packaging/scripts/append_sha_to_version.py lbrynet/__init__.py "${TRAVIS_COMMIT}"
     add_ui
     set_build "qa"
 elif [[ "$TRAVIS_TAG" =~ $IS_RC_REGEX ]]; then

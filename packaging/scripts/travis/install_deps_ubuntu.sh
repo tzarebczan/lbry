@@ -36,13 +36,9 @@ wget https://bootstrap.pypa.io/get-pip.py
 python get-pip.py
 rm get-pip.py
 
-pip install -r requirements.txt
 pip install cython
 pip install unqlite
-
-pip install mock pylint coveralls
-# have to do `which trial` instead of simply trial because coverage needs the full path
-coverage run --source=lbrynet `which trial` tests
-coveralls
-
-./run_pylint.sh
+pip install mock
+pip install pylint
+pip install coveralls
+pip install -r requirements.txt

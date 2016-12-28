@@ -17,7 +17,7 @@ function SetBuild([string]$build) {
 }
 
 If (${Env:APPVEYOR_REPO_TAG} -NotMatch "true") {
-   C:\Python27\python.exe packaging\append_sha_to_version.py lbrynet\__init__.py ${Env:APPVEYOR_REPO_COMMIT}
+   C:\Python27\python.exe packaging\scripts\append_sha_to_version.py lbrynet\__init__.py ${Env:APPVEYOR_REPO_COMMIT}
    if ($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode) }
    
    AddUi
@@ -35,4 +35,4 @@ Else {
 C:\Python27\python.exe setup.py build bdist_msi
 if ($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode)  }
 
-signtool.exe sign /f packaging\windows\certs\lbry2.pfx /p %key_pass% /tr http://tsa.starfieldtech.com /td SHA256 /fd SHA256 dist\*.msi
+signtool.exe sign /f packaging\certs\windows\lbry2.pfx /p %key_pass% /tr http://tsa.starfieldtech.com /td SHA256 /fd SHA256 dist\*.msi

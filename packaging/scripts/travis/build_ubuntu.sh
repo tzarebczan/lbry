@@ -138,7 +138,7 @@ tar -xzf control.tar.gz --directory control
 # files: http://linux.spiney.org/forcing_gzip_compression_when_building_debian_packages
 tar -xf data.tar.?z --directory data
 
-PACKAGING_DIR='lbry/packaging/ubuntu'
+PACKAGING_DIR='lbry/packaging/tray_app/ubuntu'
 
 # set web ui branch
 sed -i "s/^WEB_UI_BRANCH='[^']\+'/WEB_UI_BRANCH='$WEB_UI_BRANCH'/" "$PACKAGING_DIR/lbry"

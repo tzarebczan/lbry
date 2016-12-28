@@ -20,6 +20,5 @@ security unlock-keychain -p ${KEYCHAIN_PASSWORD} osx-build.keychain
 security set-keychain-settings -t 3600 -l ~/Library/Keychains/osx-build.keychain
 
 # Add certificates to keychain and allow codesign to access them
-security import ${DIR}/certs/dist.cer -k ~/Library/Keychains/osx-build.keychain -T /usr/bin/codesign
-security import ${DIR}/certs/dist.p12 -k ~/Library/Keychains/osx-build.keychain -P $KEY_PASSWORD -T /usr/bin/codesign
-
+security import ${DIR}/packaging/certs/macos/dist.cer -k ~/Library/Keychains/osx-build.keychain -T /usr/bin/codesign
+security import ${DIR}/packaging/certs/macos/dist.p12 -k ~/Library/Keychains/osx-build.keychain -P $KEY_PASSWORD -T /usr/bin/codesign

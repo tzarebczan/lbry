@@ -1,0 +1,12 @@
+lbrynet
+lbryum
+requests
+certifi
+json
+jsonrpc
+seccure
+twisted
+PyObjCTools
+AppKit
+logging
+zope.interface
