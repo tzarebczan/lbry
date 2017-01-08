@@ -6,7 +6,4 @@ json
 jsonrpc
 seccure
 twisted
-PyObjCTools
-AppKit
 logging
-zope.interface

@@ -3,11 +3,13 @@
 set -euo pipefail
 set -o xtrace
 
-if [ ${ON_TRAVIS} = true ]; then
-    wget https://www.python.org/ftp/python/2.7.11/python-2.7.11-macosx10.6.pkg
-    sudo installer -pkg python-2.7.11-macosx10.6.pkg -target /
-    pip install -U pip
-fi
+#if [ ${ON_TRAVIS} = true ]; then
+#    wget https://www.python.org/ftp/python/2.7.11/python-2.7.11-macosx10.6.pkg
+#    sudo installer -pkg python-2.7.11-macosx10.6.pkg -target /
+#    pip install -U pip
+#fi
+
+pip install -U pip --upgrade
 
 brew update
 
@@ -27,40 +29,33 @@ else
     brew link --force openssl
 fi
 
-MODULES="pyobjc-core==3.1.1 pyobjc-framework-Cocoa==3.1.1 pyobjc-framework-CFNetwork==3.1.1 pyobjc-framework-Quartz==3.1.1"
+
+if brew ls --versions hg > /dev/null; then
+    echo 'hg is already installed by brew'
+else
+    brew install hg
+fi
+
+if brew ls --versions wget > /dev/null; then
+    echo 'wget is already installed by brew'
+else
+    brew install wget
+fi
+
+#MODULES="pyobjc-core==3.1.1 pyobjc-framework-Cocoa==3.1.1 pyobjc-framework-CFNetwork==3.1.1 pyobjc-framework-Quartz==3.1.1"
 
 if [ ${ON_TRAVIS} = true ]; then
-    WHEEL_DIR="${TRAVIS_BUILD_DIR}/cache/wheel"
-    mkdir -p "${WHEEL_DIR}"
-    # mapping from the package name to the
-    # actual built wheel file is surprisingly
-    # hard so instead of checking for the existance
-    # of each wheel, we mark with a file when they've all been
-    # built and skip when that file exists
-    for MODULE in ${MODULES}; do
-	if [ ! -f "${WHEEL_DIR}"/${MODULE}.finished ]; then
-	    pip wheel -w "${WHEEL_DIR}" ${MODULE}
-	    touch "${WHEEL_DIR}"/${MODULE}.finished
-	    pip install ${MODULE}
-	fi
-    done
+    mkdir wheels
+    cd wheels
+    wget https://s3.amazonaws.com/files.lbry.io/wheels.zip
+    unzip wheels.zip
+    rm wheels.zip
+    pip install ./*.whl --no-deps
+    cd ..
 fi
 
-pip install $MODULES
-pip install pyobjc==3.1.1
-pip install setuptools==19.2 --upgrade
-
-if [ ! -d "py2app" ]; then
-   hg clone https://bitbucket.org/ronaldoussoren/py2app
-   cd py2app
-   hg checkout py2app-0.10
-   # this commit fixes a bug that should have been fixed as part of 0.10
-   hg graft 149c25c413420120d3f383a9e854a17bc10d96fd
-   pip install . --upgrade
-   cd ..
-   rm -rf py2app
-fi
-
+pip install modulegraph==0.13
+pip install hg+https://bitbucket.org/jackrobison/py2app
 pip install cython
 pip install unqlite
 pip install mock
@@ -76,4 +71,3 @@ pip install jsonrpc
 pip install certifi
 
 pip install -r requirements.txt
-python packaging/scripts/travis/fix_imp_problems.py

@@ -2,7 +2,7 @@
 
 import os
 from setuptools import setup
-from lbrynet.conf import settings
+from lbrynet import conf
 from pip import req as pip_req, download as pip_download
 from distutils.sysconfig import get_python_lib
 
@@ -28,16 +28,17 @@ for item in _requirements:
                 print "Don't know how to process markers: %s" % str(item.markers)
 
 OPTIONS = {
-    'iconfile': settings.ICON_PATH,
+    'iconfile': conf.ICON_PATH,
     'plist': {
         'CFBundleIdentifier': 'io.lbry.LBRY',
         'LSUIElement': True,
     },
+    'includes': ['zope.interface', 'PyObjCTools'],
     'packages': requirements,
 }
 
 setup(
-    name=settings.APP_NAME,
+    name=conf.APP_NAME,
     app=[APP_PATH],
     options={'py2app': OPTIONS},
     data_files=DATA_FILES,

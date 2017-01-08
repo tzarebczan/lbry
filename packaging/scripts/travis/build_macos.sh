@@ -67,7 +67,7 @@ fi
 rm -rf $tmp
 mv dist/LBRY.app LBRY.app
 
-if [ -z ${SKIP_DMG+x} ]; then
+if [ ${SKIP_DMG} = false ]; then
     rm -rf dist "${NAME}.${VERSION}.dmg"
-    dmgbuild -s dmg_settings.py "LBRY" "${NAME}.${VERSION}.dmg"
+    dmgbuild -s ./packaging/scripts/travis/dmg_settings.py "LBRY" "${NAME}.${VERSION}.dmg"
 fi
