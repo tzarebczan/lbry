@@ -1,5 +1,6 @@
 #! /bin/bash
 
+pip install pylint
 
 # Ignoring distutils because: https://github.com/PyCQA/pylint/issues/73
 # TODO: as code quality improves, make pylint be more strict

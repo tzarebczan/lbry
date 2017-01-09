@@ -3,6 +3,51 @@
 set -o errexit
 set -o xtrace
 
+# Install stuff needed to build the app
+
+# to make pyobjc wheels:
+#    hg clone https://bitbucket.org/jackrobison/pyobjc
+#    cd pyobjc
+#    python development-support/set-pyobjc-version 3.2.1
+#    pip wheel pyobjc-framework-*
+#    pip wheel pyobjc-core
+#    pip wheel pyobjc
+
+
+if [ ${ON_TRAVIS} = true ]; then
+    hg clone https://bitbucket.org/jackrobison/pyobjc
+    cd pyobjc
+    python development-support/set-pyobjc-version 3.2.1
+    pip install ./pyobjc-core --upgrade
+    pip install ./pyobjc-framework-Cocoa* --upgrade
+    pip install ./pyobjc-framework-CFNetwork* --upgrade
+    pip install ./pyobjc-framework-Quartz* --upgrade
+    cd ..
+    rm -rf pyobjc
+fi
+
+#    mkdir -p wheels
+#    cd wheels
+#    wget https://s3.amazonaws.com/files.lbry.io/wheels.zip
+#    unzip wheels.zip
+#    rm wheels.zip
+#
+#    pip install ./pyobjc_framework_Cocoa-3.2.1-cp27-cp27m-macosx_10_6_intel.whl --upgrade
+#    pip install ./pyobjc_framework_CFNetwork-3.2.1-cp27-cp27m-macosx_10_6_intel.whl --upgrade
+#    pip install ./pyobjc_framework_Quartz-3.2.1-cp27-cp27m-macosx_10_6_intel.whl --upgrade
+#    pip install ./pyobjc_core-3.2.1-cp27-cp27m-macosx_10_6_intel.whl --upgrade
+#    pip install ./pyobjc-3.2.1-cp27-none-any.whl --upgrade
+#    cd ..
+#    rm -rf wheels
+#fi
+
+pip install modulegraph==0.13
+pip install hg+https://bitbucket.org/jackrobison/py2app
+pip install wheel
+pip install dmgbuild==1.1.0
+
+# Build
+
 DEST=`pwd`
 tmp="${DEST}/build"
 
@@ -67,7 +112,5 @@ fi
 rm -rf $tmp
 mv dist/LBRY.app LBRY.app
 
-if [ ${SKIP_DMG} = false ]; then
-    rm -rf dist "${NAME}.${VERSION}.dmg"
-    dmgbuild -s ./packaging/scripts/travis/dmg_settings.py "LBRY" "${NAME}.${VERSION}.dmg"
-fi
+rm -rf dist "${NAME}.${VERSION}.dmg"
+dmgbuild -s ./packaging/scripts/travis/dmg_settings.py "LBRY" "${NAME}.${VERSION}.dmg"

@@ -30,6 +30,8 @@ before_install:
   - mkdir -p lbrynet/resources/ui
   - ./packaging/scripts/travis/before_install.sh
   - ./packaging/scripts/travis/run_tests.sh
+  - ./packaging/scripts/travis/run_pylint.sh
+
   
 install:
   - pip install .
