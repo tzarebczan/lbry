@@ -25,6 +25,10 @@ cache:
     - $TRAVIS_BUILD_DIR/cache/wheel
 
 before_install:
+  - export ON_TRAVIS=true
+  - export SKIP_DMG=false
+  - export SKIP_SIGN=false
+  - export SKIP_PYLINT=false
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./packaging/scripts/travis/install_deps_macos.sh; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./packaging/scripts/travis/install_deps_ubuntu.sh; fi
   - mkdir -p lbrynet/resources/ui

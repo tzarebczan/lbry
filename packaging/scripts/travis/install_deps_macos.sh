@@ -3,14 +3,6 @@
 set -euo pipefail
 set -o xtrace
 
-if [ ${ON_TRAVIS} = true ]; then
-    wget https://www.python.org/ftp/python/2.7.11/python-2.7.11-macosx10.6.pkg
-    sudo installer -pkg python-2.7.11-macosx10.6.pkg -target /
-    pip install -U pip
-    pip install pip --upgrade
-    pip install setuptools --upgrade
-fi
-
 brew update
 
 # follow this pattern to avoid failing if its already
@@ -40,6 +32,14 @@ if brew ls --versions wget > /dev/null; then
     echo 'wget is already installed by brew'
 else
     brew install wget
+fi
+
+if [ ${ON_TRAVIS} = true ]; then
+    wget https://www.python.org/ftp/python/2.7.11/python-2.7.11-macosx10.6.pkg
+    sudo installer -pkg python-2.7.11-macosx10.6.pkg -target /
+    pip install -U pip
+    pip install pip --upgrade
+    pip install setuptools --upgrade
 fi
 
 # pyopenssl is needed because OSX ships an old version of openssl by default
