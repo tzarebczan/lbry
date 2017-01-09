@@ -14,17 +14,15 @@ set -o xtrace
 #    pip wheel pyobjc
 
 
-if [ ${ON_TRAVIS} = true ]; then
-    hg clone https://bitbucket.org/jackrobison/pyobjc
-    cd pyobjc
-    python development-support/set-pyobjc-version 3.2.1
-    pip install ./pyobjc-core --upgrade
-    pip install ./pyobjc-framework-Cocoa* --upgrade
-    pip install ./pyobjc-framework-CFNetwork* --upgrade
-    pip install ./pyobjc-framework-Quartz* --upgrade
-    cd ..
-    rm -rf pyobjc
-fi
+hg clone https://bitbucket.org/jackrobison/pyobjc
+cd pyobjc
+python development-support/set-pyobjc-version 3.2.1
+pip install ./pyobjc-core --upgrade
+pip install ./pyobjc-framework-Cocoa* --upgrade
+pip install ./pyobjc-framework-CFNetwork* --upgrade
+pip install ./pyobjc-framework-Quartz* --upgrade
+cd ..
+rm -rf pyobjc
 
 #    mkdir -p wheels
 #    cd wheels
