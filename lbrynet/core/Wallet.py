@@ -680,10 +680,6 @@ class Wallet(object):
         d = self._address_is_mine(address)
         return d
 
-    def get_transaction(self, txid):
-        d = self._get_transaction(txid)
-        return d
-
     def get_claim_metadata_for_sd_hash(self, sd_hash):
         return self._get_claim_metadata_for_sd_hash(sd_hash)
 
