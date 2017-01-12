@@ -296,7 +296,7 @@ class Daemon(AuthJSONRPCServer):
 
         def _announce_startup():
             def _wait_for_credits():
-                if float(self.session.wallet.wallet_balance) == 0.0:
+                if float(self.session.wallet.get_balance()) == 0.0:
                     self.startup_status = STARTUP_STAGES[6]
                     return reactor.callLater(1, _wait_for_credits)
                 else:
@@ -343,7 +343,7 @@ class Daemon(AuthJSONRPCServer):
         yield self._setup_lbry_file_manager()
         yield self._setup_query_handlers()
         yield self._setup_server()
-        log.info("Starting balance: " + str(self.session.wallet.wallet_balance))
+        log.info("Starting balance: " + str(self.session.wallet.get_balance()))
         yield _announce_startup()
 
     def _get_platform(self):
@@ -1135,7 +1135,7 @@ class Daemon(AuthJSONRPCServer):
 
         log.info("Get startup notice")
 
-        if self.first_run and not self.session.wallet.wallet_balance:
+        if self.first_run and not self.session.wallet.get_balance():
             return self._render_response(self.startup_message, OK_CODE)
         elif self.first_run:
             return self._render_response(None, OK_CODE)
@@ -1322,7 +1322,7 @@ class Daemon(AuthJSONRPCServer):
         """
 
         log.info("Get balance")
-        return self._render_response(float(self.session.wallet.wallet_balance), OK_CODE)
+        return self._render_response(float(self.session.wallet.get_balance()), OK_CODE)
 
     def jsonrpc_stop(self):
         """

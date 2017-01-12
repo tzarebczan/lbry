@@ -21,7 +21,7 @@ from lbryum.commands import known_commands, Commands
 from lbrynet.core.sqlite_helpers import rerun_if_locked
 from lbrynet.interfaces import IRequestCreator, IQueryHandlerFactory, IQueryHandler, IWallet
 from lbrynet.core.client.ClientRequest import ClientRequest
-from lbrynet.core.Error import UnknownNameError, InvalidStreamInfoError, RequestCanceledError
+from lbrynet.core.Error import UnknownNameError, InvalidStreamInfoError, RequestCanceledError, InsufficientFundsError
 from lbrynet.db_migrator.migrate1to2 import UNSET_NOUT
 from lbrynet.metadata.Metadata import Metadata
 
@@ -291,19 +291,12 @@ class Wallet(object):
             else:
                 d = defer.succeed(True)
 
-            d.addCallback(lambda _: self.get_balance())
-
-            def set_wallet_balance(balance):
-                if self.wallet_balance != balance:
-                    log.debug("Got a new balance: %s", str(balance))
-                self.wallet_balance = balance
-
             def log_error(err):
                 if isinstance(err, AttributeError):
                     log.warning("Failed to get an updated balance")
                     log.warning("Last balance update: %s", str(self.wallet_balance))
 
-            d.addCallbacks(set_wallet_balance, log_error)
+            d.addCallbacks(lambda _: self.update_balance(), log_error)
             return d
 
         d.addCallback(lambda should_run: do_manage() if should_run else None)
@@ -329,6 +322,18 @@ class Wallet(object):
         d.addBoth(set_manage_not_running)
         return d
 
+    def update_balance(self):
+        """ obtain balance from lbryum wallet and set self.wallet_balance
+        """
+        def set_wallet_balance(balance):
+            if self.wallet_balance != balance:
+                log.debug("Got a new balance: %s", str(balance))
+            self.wallet_balance = balance
+
+        d = self._update_balance()
+        d.addCallback(lambda balance: set_wallet_balance(balance))
+        return d
+
     def get_info_exchanger(self):
         return LBRYcrdAddressRequester(self)
 
@@ -347,7 +352,7 @@ class Wallet(object):
             once the service has been rendered
         """
         rounded_amount = Decimal(str(round(amount, 8)))
-        if self.wallet_balance >= self.total_reserved_points + rounded_amount:
+        if self.get_balance() >= rounded_amount:
             self.total_reserved_points += rounded_amount
             return ReservedPoints(identifier, rounded_amount)
         return None
@@ -431,13 +436,13 @@ class Wallet(object):
         return d
 
     def _send_payments(self):
+
         payments_to_send = {}
         for address, points in self.queued_payments.items():
             if points > 0:
                 log.debug("Should be sending %s points to %s", str(points), str(address))
                 payments_to_send[address] = points
                 self.total_reserved_points -= points
-                self.wallet_balance -= points
             else:
                 log.info("Skipping dust")
 
@@ -448,6 +453,7 @@ class Wallet(object):
             d = self._do_send_many(payments_to_send)
             d.addCallback(lambda txid: log.debug("Sent transaction %s", txid))
             return d
+
         log.debug("There were no payments to send")
         return defer.succeed(True)
 
@@ -611,6 +617,7 @@ class Wallet(object):
 
 
     def claim_name(self, name, bid, m):
+
         def _save_metadata(claim_out, metadata):
             if not claim_out['success']:
                 msg = 'Claim to name {} failed: {}'.format(name, claim_out['reason'])
@@ -626,9 +633,13 @@ class Wallet(object):
         def _claim_or_update(claim, metadata, _bid):
             if not claim:
                 log.debug("No own claim yet, making a new one")
+                if self.get_balance() < _bid:
+                    raise InsufficientFundsError()
                 return self._send_name_claim(name, metadata, _bid)
             else:
                 log.debug("Updating over own claim")
+                if self.get_balance() < _bid - claim['amount']:
+                    raise InsufficientFundsError()
                 d = self.update_metadata(metadata, claim['value'])
                 claim_outpoint = ClaimOutpoint(claim['txid'], claim['nOut'])
                 d.addCallback(
@@ -664,6 +675,9 @@ class Wallet(object):
             claim_out.pop('success')
             return defer.succeed(claim_out)
 
+        if self.get_balance() < amount:
+            raise InsufficientFundsError()
+
         d = self._support_claim(name, claim_id, amount)
         d.addCallback(lambda claim_out: _parse_support_claim_out(claim_out))
         return d
@@ -696,8 +710,8 @@ class Wallet(object):
         d.addCallback(lambda name_txid: _get_status_of_claim(name_txid, sd_hash))
         return d
 
-    def get_available_balance(self):
-        return float(self.wallet_balance - self.total_reserved_points)
+    def get_balance(self):
+        return self.wallet_balance - self.total_reserved_points - sum(self.queued_payments.values())
 
     def is_first_run(self):
         if self._first_run == self._FIRST_RUN_UNKNOWN:
@@ -745,6 +759,7 @@ class Wallet(object):
 
         d.addCallback(get_status)
         return d
+
 
     def _check_expected_balances(self):
         now = datetime.datetime.now()
@@ -794,7 +809,7 @@ class Wallet(object):
 
     ######### Must be overridden #########
 
-    def get_balance(self):
+    def _update_balance(self):
         return defer.fail(NotImplementedError())
 
     def get_new_address(self):
@@ -1017,7 +1032,7 @@ class LBRYumWallet(Wallet):
         func = getattr(cmd_runner, cmd.name)
         return threads.deferToThread(func, *args)
 
-    def get_balance(self):
+    def _update_balance(self):
         accounts = None
         exclude_claimtrietx = True
         d = self._run_cmd_as_defer_succeed('getbalance', accounts, exclude_claimtrietx)
