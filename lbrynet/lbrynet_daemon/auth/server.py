@@ -226,9 +226,19 @@ class AuthJSONRPCServer(AuthorizedBase):
         if conf.settings.API_INTERFACE == '0.0.0.0':
             return True
         server, port = self.get_server_port(source)
-        return (
-            server == conf.settings.API_INTERFACE and
-            port == conf.settings.api_port)
+        return self._check_server_port(server, port)
+
+    def _check_server_port(self, server, port):
+        api = (conf.settings.API_INTERFACE, conf.settings.api_port)
+        return (server, port) == api or self._is_from_allowed_origin(server, port)
+
+    def _is_from_allowed_origin(self, server, port):
+        if not conf.settings.allowed_origin:
+            return False
+        if conf.settings.allowed_origin == '*':
+            return True
+        allowed_server, allowed_port = self.get_server_port(conf.settings.allowed_origin)
+        return (allowed_server, allowed_port) == (server, port)
 
     def get_server_port(self, origin):
         parsed = urlparse.urlparse(origin)
