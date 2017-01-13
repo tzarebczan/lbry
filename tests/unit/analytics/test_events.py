@@ -15,7 +15,7 @@ class EventsTest(unittest.TestCase):
         desired_result = {
             'context': 'any valid json datatype',
             'event': 'Heartbeat',
-            'properties': {'lbry_id': 'lbry123', 'session_id': 'session456'},
+            'properties': {'installation_id': 'lbry123', 'session_id': 'session456'},
             'timestamp': '2016-01-01T00:00:00Z',
             'userId': 'lbry'
         }
@@ -27,7 +27,7 @@ class EventsTest(unittest.TestCase):
             'context': 'any valid json datatype',
             'event': 'Download Started',
             'properties': {
-                'lbry_id': 'lbry123',
+                'installation_id': 'lbry123',
                 'session_id': 'session456',
                 'name': 'great gatsby',
                 'stream_info': None,

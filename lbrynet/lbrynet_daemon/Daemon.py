@@ -266,7 +266,7 @@ class Daemon(AuthJSONRPCServer):
         self.log_uploader = log_support.LogUploader.load('lbrynet', self.log_file)
 
         self.analytics_manager = analytics_manager
-        self.lbryid = conf.settings.lbryid
+        self.lbryid = utils.generate_id()
         self.daemon_conf = conf.settings.get_conf_filename()
 
         self.wallet_user = None
@@ -368,14 +368,6 @@ class Daemon(AuthJSONRPCServer):
             with open(name_cache_filename, "r") as name_cache:
                 self.name_cache = json.loads(name_cache.read())
             log.info("Loaded claim info cache")
-
-        if os.path.isfile(lbryid_filename):
-            with open(lbryid_filename, "r") as lbryid_file:
-                self.lbryid = base58.b58decode(lbryid_file.read())
-        else:
-            with open(lbryid_filename, "w") as lbryid_file:
-                self.lbryid = utils.generate_id()
-                lbryid_file.write(base58.b58encode(self.lbryid))
 
     def _check_network_connection(self):
         self.connected_to_internet = utils.check_connection()
@@ -673,7 +665,7 @@ class Daemon(AuthJSONRPCServer):
 
     def _modify_loggly_formatter(self):
         log_support.configure_loggly_handler(
-            lbry_id=base58.b58encode(self.lbryid),
+            installation_id=conf.settings.installation_id,
             session_id=self._session_id
         )
 
@@ -1198,7 +1190,12 @@ class Daemon(AuthJSONRPCServer):
 
         bug_message = p['message']
         platform_name = self._get_platform()['platform']
-        report_bug_to_slack(bug_message, self.lbryid, platform_name, lbrynet_version)
+        report_bug_to_slack(
+            bug_message,
+            conf.settings.installation_id,
+            platform_name,
+            lbrynet_version
+        )
         return self._render_response(True, OK_CODE)
 
     def jsonrpc_get_lbry_session_info(self):
@@ -1209,6 +1206,7 @@ class Daemon(AuthJSONRPCServer):
             None
         Returns:
             'lbry_id': string,
+            'installation_id': string,
             'managed_blobs': int, number of completed blobs in the blob manager,
             'managed_streams': int, number of lbry files in the file manager
         """
@@ -1218,6 +1216,7 @@ class Daemon(AuthJSONRPCServer):
         def _prepare_message(blobs):
             msg = {
                 'lbry_id': base58.b58encode(self.lbryid)[:SHORT_ID_LEN],
+                'installation_id': conf.settings.installation_id[:SHORT_ID_LEN],
                 'managed_blobs': len(blobs),
                 'managed_streams': len(self.lbry_file_manager.lbry_files),
             }
@@ -1428,7 +1427,7 @@ class Daemon(AuthJSONRPCServer):
             # If so, maybe we should return something else.
             errback=log.fail(lambda err: server.failure),
             errbackArgs=('Failed to resolve name',),
-            errbackKeywords={'level':'INFO'},
+            errbackKeywords={'level': 'INFO'},
         )
         return d
 
@@ -2642,13 +2641,12 @@ def loggly_time_string(dt):
     return urllib.quote_plus(formatted_dt + milliseconds + "Z")
 
 
-def get_loggly_query_string(lbry_id):
-    decoded_id = base58.b58encode(lbry_id)
+def get_loggly_query_string(installation_id):
     base_loggly_search_url = "https://lbry.loggly.com/search#"
     now = utils.now()
     yesterday = now - utils.timedelta(days=1)
     params = {
-        'terms': 'json.lbry_id:{}*'.format(decoded_id[:SHORT_ID_LEN]),
+        'terms': 'json.installation_id:{}*'.format(installation_id[:SHORT_ID_LEN]),
         'from': loggly_time_string(yesterday),
         'to': loggly_time_string(now)
     }
@@ -2656,13 +2654,13 @@ def get_loggly_query_string(lbry_id):
     return base_loggly_search_url + data
 
 
-def report_bug_to_slack(message, lbry_id, platform_name, app_version):
+def report_bug_to_slack(message, installation_id, platform_name, app_version):
     webhook = utils.deobfuscate(conf.settings.SLACK_WEBHOOK)
     payload_template = "os: %s\n version: %s\n<%s|loggly>\n%s"
     payload_params = (
         platform_name,
         app_version,
-        get_loggly_query_string(lbry_id),
+        get_loggly_query_string(installation_id),
         message
     )
     payload = {

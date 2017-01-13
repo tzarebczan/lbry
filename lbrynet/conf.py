@@ -378,17 +378,17 @@ settings = None
 def initialize_settings():
     global settings
     settings = Config()
-    settings.lbryid = get_lbryid()
     settings.session_id = base58.b58encode(utils.generate_id())
+    settings.installation_id = get_installation_id()
 
 
-def get_lbryid():
-    lbryid_filename = os.path.join(settings.ensure_data_dir(), "lbryid")
-    if os.path.isfile(lbryid_filename):
-        with open(lbryid_filename, "r") as lbryid_file:
-            return base58.b58decode(lbryid_file.read())
+def get_installation_id():
+    install_id_filename = os.path.join(settings.ensure_data_dir(), "install_id")
+    if os.path.isfile(install_id_filename):
+        with open(install_id_filename, "r") as install_id_file:
+            return install_id_file.read()
     else:
-        lbryid = utils.generate_id()
-        with open(lbryid_filename, "w") as lbryid_file:
-            lbryid_file.write(base58.b58encode(lbryid))
-        return lbryid
+        install_id = base58.b58encode(utils.generate_id())
+        with open(install_id_filename, "w") as install_id_file:
+            install_id_file.write(install_id)
+        return install_id

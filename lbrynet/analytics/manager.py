@@ -29,7 +29,7 @@ class Manager(object):
         if events is None:
             events = Events(
                 make_context(get_platform(), conf.settings.wallet),
-                base58.b58encode(conf.settings.lbryid),
+                conf.settings.installation_id,
                 conf.settings.session_id,
             )
         return cls(api, events, Track())
