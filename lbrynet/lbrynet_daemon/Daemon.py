@@ -2268,7 +2268,7 @@ class Daemon(AuthJSONRPCServer):
         return d
 
     @AuthJSONRPCServer.auth_required
-    def jsonrpc_open_file(self, p):
+    def jsonrpc_open(self, p):
         """
         Instruct the OS to open a file.
 
