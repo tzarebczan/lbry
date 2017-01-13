@@ -49,6 +49,8 @@ else
     else
         brew install wget
     fi
+
+    pip install vex
 fi
 
 # Configure build-specific things

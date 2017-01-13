@@ -27,6 +27,7 @@ base58==0.2.2
 googlefinance==0.7
 pyyaml==3.12
 service_identity==16.0.0
+ConfigParser==3.5.0
 https://github.com/lbryio/lbryum/tarball/master/#egg=lbryum
 
 # Mac specific requirements
