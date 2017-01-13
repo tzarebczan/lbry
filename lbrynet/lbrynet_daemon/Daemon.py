@@ -11,6 +11,7 @@ import requests
 import urllib
 import simplejson as json
 import textwrap
+from urllib2 import HTTPError
 from decimal import Decimal
 
 from twisted.web import server
@@ -138,38 +139,18 @@ class CheckRemoteVersions(object):
         self.daemon = daemon
 
     def __call__(self):
-        d = self._get_lbrynet_version()
+        d = threads.deferToThread(self._get_lbrynet_version)
+        d.addErrback(Failure.trap, HTTPError)
+        d.addErrback(log.fail(), "Error checking for lbrynet updates")
         d.addCallback(lambda _: self._get_lbryum_version())
+        d.addErrback(Failure.trap, HTTPError)
+        d.addErrback(log.fail(), "Error checking for lbryum updates")
 
     def _get_lbryum_version(self):
-        try:
-            version = get_lbryum_version_from_github()
-            log.info(
-                "remote lbryum %s > local lbryum %s = %s",
-                version, lbryum_version,
-                utils.version_is_greater_than(version, lbryum_version)
-            )
-            self.daemon.git_lbryum_version = version
-            return defer.succeed(None)
-        except Exception:
-            log.info("Failed to get lbryum version from git")
-            self.daemon.git_lbryum_version = None
-            return defer.fail(None)
+        self.daemon.git_lbryum_version = get_lbryum_version_from_github()
 
     def _get_lbrynet_version(self):
-        try:
-            version = get_lbrynet_version_from_github()
-            log.info(
-                "remote lbrynet %s > local lbrynet %s = %s",
-                version, lbrynet_version,
-                utils.version_is_greater_than(version, lbrynet_version)
-            )
-            self.daemon.git_lbrynet_version = version
-            return defer.succeed(None)
-        except Exception:
-            log.info("Failed to get lbrynet version from git")
-            self.daemon.git_lbrynet_version = None
-            return defer.fail(None)
+        self.daemon.git_lbrynet_version = get_lbrynet_version_from_github()
 
 
 class AlwaysSend(object):
@@ -315,8 +296,8 @@ class Daemon(AuthJSONRPCServer):
         log.info("Starting lbrynet-daemon")
 
         self.looping_call_manager.start(Checker.INTERNET_CONNECTION, 3600)
-        self.looping_call_manager.start(Checker.VERSION, 3600 * 12)
-        self.looping_call_manager.start(Checker.CONNECTION_STATUS, 1)
+        self.looping_call_manager.start(Checker.VERSION, 1800)
+        self.looping_call_manager.start(Checker.CONNECTION_STATUS, 30)
         self.exchange_rate_manager.start()
 
         if conf.settings.host_ui:
@@ -1222,12 +1203,12 @@ class Daemon(AuthJSONRPCServer):
         try:
             lbrynet_update_available = utils.version_is_greater_than(
                 self.git_lbrynet_version, lbrynet_version)
-        except AttributeError:
+        except TypeError:
             lbrynet_update_available = False
         try:
             lbryum_update_available = utils.version_is_greater_than(
                 self.git_lbryum_version, lbryum_version)
-        except AttributeError:
+        except TypeError:
             lbryum_update_available = False
         msg = {
             'platform': platform_info['platform'],
